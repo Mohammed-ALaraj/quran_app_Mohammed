@@ -48,7 +48,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         ...page!.map(
                           (aya) => TextSpan(
-                            text: aya.text,
+                            children: [
+                              TextSpan(
+                                text: aya.text,
+                              ),
+                              WidgetSpan(
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image:AssetImage("assets/images/Ayah.png"),
+
+                                      )
+                                    ),
+                                    width: 25,height: 25,
+                                    child: Text("${aya.number}"),
+
+                                  )
+                              )
+                            ]
                           ),
                           
                         ),
