@@ -13,29 +13,60 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   QPage? page;
-  
-  void getPage()async{
-    page= await QuranPageRepo.getPage(1);
+
+  void getPage() async {
+    page = await QuranPageRepo.getPage(1);
+    print(page);
     setState(() {});
   }
+
   @override
   void initState() {
     getPage();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:page==null?
-         Center(child: CircularProgressIndicator(),)
-          : Center(
-            child: Wrap(
-              textDirection: TextDirection.rtl,
-                    children: page!.map((aya)=>Text(
-
-              aya.text??"")).toList(),
+      body: page == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : PageView.builder(
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return Center(
+                    child: Align(
+                  alignment: Alignment.center,
+                  child: RichText(
+                    textAlign: TextAlign.end,
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                      children: [
+                        ...page!.map(
+                          (aya) => TextSpan(
+                            text: aya.text,
+                          ),
+                          
+                        ),
+                      ],
+                    ),
                   ),
-          ),
+                )
+                    // Wrap(
+                    //   textDirection: TextDirection.rtl,
+                    //   children: page!
+                    // .map(
+                    //   (aya) => Text(aya.text ?? ""),
+                    // )
+                    //       .toList(),
+                    // ),
+                    );
+              },
+            ),
     );
   }
 }
