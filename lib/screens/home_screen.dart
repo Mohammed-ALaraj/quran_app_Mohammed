@@ -12,79 +12,93 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  QPage? page;
+  final Map<int, QPage?> pageCache = {};
+  int currentPage = 1;
 
-  void getPage() async {
-    page = await QuranPageRepo.getPage(1);
-    print(page);
+  Future<void> preloadPages(int pageNumber) async {
+    if (!pageCache.containsKey(pageNumber)) {
+      pageCache[pageNumber] = await QuranPageRepo.getPage(pageNumber);
+    }
+    if (pageNumber + 1 <= 604 && !pageCache.containsKey(pageNumber + 1)) {
+      pageCache[pageNumber + 1] = await QuranPageRepo.getPage(pageNumber + 1);
+    }
+    if (pageNumber - 1 > 0 && !pageCache.containsKey(pageNumber - 1)) {
+      pageCache[pageNumber - 1] = await QuranPageRepo.getPage(pageNumber - 1);
+    }
+
     setState(() {});
   }
 
   @override
   void initState() {
-    getPage();
     super.initState();
+    preloadPages(currentPage);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: page == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : PageView.builder(
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                return Center(
-                    child: Align(
-                  alignment: Alignment.center,
+      body: PageView.builder(
+        itemCount: 604,
+        reverse: true,
+        onPageChanged: (index) {
+          currentPage = index + 1;
+          preloadPages(currentPage);
+        },
+        itemBuilder: (context, index) {
+          final page = pageCache[index + 1];
+          return AnimatedOpacity(
+            opacity: page != null ? 1 : 0,
+            duration: const Duration(milliseconds: 300),
+            child: page == null
+                ? const Center(child: CircularProgressIndicator())
+                : Center(
+              child: Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
                   child: RichText(
                     textAlign: TextAlign.end,
                     text: TextSpan(
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
+                      style: const TextStyle(color: Colors.black),
                       children: [
                         ...page!.map(
-                          (aya) => TextSpan(
+                              (aya) => TextSpan(
                             children: [
                               TextSpan(
                                 text: aya.text,
+                                style: const TextStyle(fontSize: 23),
                               ),
                               WidgetSpan(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image:AssetImage("assets/images/Ayah.png"),
-
-                                      )
+                                alignment: PlaceholderAlignment.middle,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                          "assets/images/Ayah.png"),
                                     ),
-                                    width: 25,height: 25,
-                                    child: Text("${aya.number}"),
-
-                                  )
-                              )
-                            ]
+                                  ),
+                                  width: 25,
+                                  height: 25,
+                                  child: Text(
+                                    "${aya.number}",
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          
                         ),
                       ],
                     ),
                   ),
-                )
-                    // Wrap(
-                    //   textDirection: TextDirection.rtl,
-                    //   children: page!
-                    // .map(
-                    //   (aya) => Text(aya.text ?? ""),
-                    // )
-                    //       .toList(),
-                    // ),
-                    );
-              },
+                ),
+              ),
             ),
+          );
+        },
+      ),
     );
   }
 }
