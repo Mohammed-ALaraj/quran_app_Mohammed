@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final Map<int, QPage?> pageCache = {};
   int currentPage = 1;
+  double scale=1.0;
 
   Future<void> preloadPages(int pageNumber) async {
     if (!pageCache.containsKey(pageNumber)) {
@@ -47,50 +48,85 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         itemBuilder: (context, index) {
           final page = pageCache[index + 1];
+
           return AnimatedOpacity(
-            opacity: page != null ? 1 : 0,
+            opacity: page != null ? 1 : 0 ,
             duration: const Duration(milliseconds: 300),
             child: page == null
                 ? const Center(child: CircularProgressIndicator())
                 : Center(
-              child: Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: RichText(
-                    textAlign: TextAlign.end,
-                    text: TextSpan(
-                      style: const TextStyle(color: Colors.black),
-                      children: [
-                        ...page!.map(
-                              (aya) => TextSpan(
-                            children: [
-                              TextSpan(
-                                text: aya.text,
-                                style: const TextStyle(fontSize: 23),
-                              ),
-                              WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          "assets/images/Ayah.png"),
+              child: GestureDetector(
+                onScaleUpdate:(d){
+                  setState(() {
+                    scale=d.scale;
+                  });
+                } ,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: RichText(
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.justify,
+                      // textScaler: TextScaler.linear(scale),
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black,),
+                        children: [
+                          ...page!.map(
+                                (aya) => TextSpan(
+                              children: [
+                                WidgetSpan(
+                                    child: Visibility(
+                                    visible:aya.numberInSurah==1&&aya.surah!=null ,
+                                    child: Container(
+                                      height: 60,
+                                      margin: EdgeInsets.only(bottom: 10,),
+                                      width: double.infinity,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        image:DecorationImage(
+                                          fit: BoxFit.cover,
+                                            image: AssetImage("assets/images/head_of_surah.png")
+                                        )
+                                      ),
+                                      child: Text(
+                                        "${aya.surah!.name}",
+                                        textScaler: TextScaler.linear(1),
+                                        style: TextStyle(
+                                          fontSize: 18,
+
+                                        ),
+                                      ),
+                                    ))),
+
+                                TextSpan(
+                                  text: aya.text,
+
+                                  style:  TextStyle(fontSize: 23*scale),
+                                ),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    decoration: const BoxDecoration(
+                                      image: DecorationImage(
+                                        image: AssetImage(
+                                            "assets/images/Ayah.png"),
+                                      ),
+                                    ),
+                                    width: 25,
+                                    height: 25,
+                                    child: Text(
+                                      "${aya.numberInSurah}",
+                                      style: const TextStyle(fontSize: 10),
                                     ),
                                   ),
-                                  width: 25,
-                                  height: 25,
-                                  child: Text(
-                                    "${aya.number}",
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
